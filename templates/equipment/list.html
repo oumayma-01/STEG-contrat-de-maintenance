@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block page_title %}Équipements{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-server me-2"></i>Équipements</h2>
+    <a href="{{ url_for('add_equipment') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Ajouter un équipement
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if equipment %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>N° Série</th>
+                            <th>Date Acquisition</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eq in equipment %}
+                        <tr>
+                            <td><strong>{{ eq.nom }}</strong></td>
+                            <td>
+                                <span class="badge bg-primary">{{ eq.type|replace('_', ' ')|title }}</span>
+                            </td>
+                            <td>
+                                {% if eq.numero_serie %}
+                                    <code>{{ eq.numero_serie }}</code>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if eq.date_acquisition %}
+                                    {{ eq.date_acquisition.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if eq.description %}
+                                    {{ eq.description[:40] }}{% if eq.description|length > 40 %}...{% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('edit_equipment', id=eq.id) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('delete_equipment', id=eq.id) }}" class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet équipement ?')" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-server fa-3x text-muted mb-3"></i>
+                <h5>Aucun équipement trouvé</h5>
+                <p class="text-muted">Commencez par ajouter votre premier équipement.</p>
+                <a href="{{ url_for('add_equipment') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ajouter un équipement
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

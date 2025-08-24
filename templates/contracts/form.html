@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block page_title %}Nouveau contrat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-contract me-2"></i>
+                    Nouveau contrat
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fournisseur_id" class="form-label">Fournisseur <span class="text-danger">*</span></label>
+                            <select class="form-select" id="fournisseur_id" name="fournisseur_id" required>
+                                <option value="">Sélectionner un fournisseur</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier.id }}">{{ supplier.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="reference_marche" class="form-label">Référence marché <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="reference_marche" name="reference_marche" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="date_debut" class="form-label">Date début <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="date_debut" name="date_debut" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_fin_garantie" class="form-label">Fin garantie <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="date_fin_garantie" name="date_fin_garantie" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date_fin_maintenance" class="form-label">Fin maintenance <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="date_fin_maintenance" name="date_fin_maintenance" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="frequence_visite_preventive" class="form-label">Fréquence visite préventive</label>
+                            <select class="form-select" id="frequence_visite_preventive" name="frequence_visite_preventive">
+                                <option value="trimestrielle" selected>Trimestrielle</option>
+                                <option value="semestrielle">Semestrielle</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="delai_reponse_intervention_heures" class="form-label">Délai réponse (heures)</label>
+                            <input type="number" class="form-control" id="delai_reponse_intervention_heures" 
+                                   name="delai_reponse_intervention_heures" value="2" min="1" max="48">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Équipements couverts</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            {% for eq in equipment %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="equipment_ids" 
+                                       value="{{ eq.id }}" id="eq{{ eq.id }}">
+                                <label class="form-check-label" for="eq{{ eq.id }}">
+                                    <strong>{{ eq.nom }}</strong>
+                                    <span class="badge bg-secondary ms-2">{{ eq.type|replace('_', ' ')|title }}</span>
+                                    {% if eq.numero_serie %}
+                                        <small class="text-muted d-block">N° Série: {{ eq.numero_serie }}</small>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <a href="{{ url_for('contracts') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Créer le contrat
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
