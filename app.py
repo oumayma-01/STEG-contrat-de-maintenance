@@ -7,13 +7,18 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///steg_contracts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/db_gestion_contrats_maintenance'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Make date available in all templates
+@app.context_processor
+def inject_date():
+    return {'date': date, 'datetime': datetime, 'timedelta': timedelta}
 
 @login_manager.user_loader
 def load_user(user_id):

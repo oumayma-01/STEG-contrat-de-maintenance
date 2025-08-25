@@ -37,11 +37,13 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="date_fin_garantie" class="form-label">Fin garantie <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="date_fin_garantie" name="date_fin_garantie" required>
+                            <input type="date" class="form-control" id="date_fin_garantie" name="date_fin_garantie" required readonly>
+                            <small class="form-text text-muted">Calculée automatiquement (1 an après le début)</small>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="date_fin_maintenance" class="form-label">Fin maintenance <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="date_fin_maintenance" name="date_fin_maintenance" required>
+                            <input type="date" class="form-control" id="date_fin_maintenance" name="date_fin_maintenance" required readonly>
+                            <small class="form-text text-muted">Calculée automatiquement (4 ans après le début)</small>
                         </div>
                     </div>
                     
@@ -92,4 +94,23 @@
         </div>
     </div>
 </div>
+
+<script>
+// Auto-calculate contract dates based on STEG rules
+document.getElementById('date_debut').addEventListener('change', function() {
+    const dateDebut = new Date(this.value);
+    
+    if (dateDebut) {
+        // Garantie: 1 year after start date
+        const dateFinGarantie = new Date(dateDebut);
+        dateFinGarantie.setFullYear(dateFinGarantie.getFullYear() + 1);
+        document.getElementById('date_fin_garantie').value = dateFinGarantie.toISOString().split('T')[0];
+        
+        // Maintenance: 4 years after start date (1 year garantie + 3 years maintenance)
+        const dateFinMaintenance = new Date(dateDebut);
+        dateFinMaintenance.setFullYear(dateFinMaintenance.getFullYear() + 4);
+        document.getElementById('date_fin_maintenance').value = dateFinMaintenance.toISOString().split('T')[0];
+    }
+});
+</script>
 {% endblock %}
