@@ -15,6 +15,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Make date available in all templates
+@app.context_processor
+def inject_date():
+    return {'date': date, 'datetime': datetime, 'timedelta': timedelta}
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
