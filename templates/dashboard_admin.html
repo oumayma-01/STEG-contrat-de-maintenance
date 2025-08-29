@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block page_title %}Tableau de bord Administrateur{% endblock %}
+
+{% block content %}
+<div class="alert alert-info mb-4">
+    <i class="fas fa-user-shield me-2"></i>
+    Bienvenue, Administrateur. Vous pouvez créer des comptes et attribuer les privilèges.
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Contrats Total</div>
+                        <div class="h5 mb-0">{{ total_contracts }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-file-contract fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card success">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Contrats Actifs</div>
+                        <div class="h5 mb-0">{{ active_contracts }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card info">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Équipements</div>
+                        <div class="h5 mb-0">{{ total_equipment }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-server fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stats-card warning">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Interventions En Cours</div>
+                        <div class="h5 mb-0">{{ pending_interventions }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tools fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Interventions and Expiring Contracts -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2 text-primary"></i>
+                    Interventions Récentes
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_interventions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for intervention in recent_interventions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if intervention.type == 'preventive' else 'warning' }}">
+                                            {{ intervention.type|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ intervention.description[:50] }}...</td>
+                                    <td>{{ intervention.date_intervention.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if intervention.statut == 'en_cours' else 'success' }}">
+                                            {{ intervention.statut|replace('_', ' ')|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>Aucune intervention récente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    Contrats Expirant
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if expiring_contracts %}
+                    {% for contract in expiring_contracts %}
+                    <div class="d-flex align-items-center mb-3 p-3 bg-light rounded">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ contract.reference_marche }}</h6>
+                            <small class="text-muted">{{ contract.fournisseur.nom }}</small>
+                            <div class="small text-danger">
+                                <i class="fas fa-calendar-times me-1"></i>
+                                {{ contract.date_fin_maintenance.strftime('%d/%m/%Y') }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                        <p>Aucun contrat n'expire bientôt</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2 text-primary"></i>
+                    Actions Rapides
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin_manage_users') }}" class="btn btn-dark w-100">
+                            <i class="fas fa-users-cog me-2"></i>
+                            Gérer les Comptes Utilisateurs
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('add_contract') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-2"></i>
+                            Nouveau Contrat
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('add_supplier') }}" class="btn btn-success w-100">
+                            <i class="fas fa-building me-2"></i>
+                            Nouveau Fournisseur
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('add_equipment') }}" class="btn btn-info w-100">
+                            <i class="fas fa-server me-2"></i>
+                            Nouvel Équipement
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block page_title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<h3>Créer un nouvel utilisateur</h3>
+<form method="POST">
+    <div class="mb-3">
+        <label>Nom d'utilisateur</label>
+        <input type="text" name="username" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Mot de passe</label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label>Rôle</label>
+        <select name="role" class="form-select" required>
+            <option value="">-- Choisir un rôle --</option>
+            <option value="Admin">Administrateur</option>
+            <option value="Gestionnaire de Contrat">Gestionnaire de Contrat</option>
+            <option value="Gestionnaire Technique">Gestionnaire Technique</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Créer l'utilisateur</button>
+</form>
+
+<hr>
+<h4>Utilisateurs existants</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom d'utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.nom_utilisateur }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

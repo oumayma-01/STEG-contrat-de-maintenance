@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block page_title %}Liste des Interventions{% endblock %}
+
+{% block content %}
+<h3>Liste des Interventions</h3>
+<ul>
+    {% for intervention in interventions %}
+        <li>{{ intervention.description }} - {{ intervention.date_intervention.strftime('%d/%m/%Y') }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

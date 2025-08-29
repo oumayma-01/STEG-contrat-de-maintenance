@@ -128,26 +128,76 @@ class PV(db.Model):
 @app.route('/')
 @login_required
 def dashboard():
-    # Dashboard statistics
+    # Redirect to the appropriate dashboard based on user role
+    if current_user.role == 'Admin':
+        return redirect(url_for('dashboard_admin'))
+    elif current_user.role == 'Gestionnaire de Contrat':
+        return redirect(url_for('dashboard_contract_manager'))
+    elif current_user.role == 'Gestionnaire Technique':
+        return redirect(url_for('dashboard_technical_manager'))
+    else:
+        flash("Rôle utilisateur inconnu.", "danger")
+        return redirect(url_for('logout'))
+
+@app.route('/dashboard/admin')
+@login_required
+def dashboard_admin():
+    # ...statistics and queries as in your main dashboard...
     total_contracts = Contract.query.count()
     active_contracts = Contract.query.filter_by(statut='actif').count()
     total_equipment = Equipment.query.count()
     pending_interventions = Intervention.query.filter_by(statut='en_cours').count()
-    
-    # Recent interventions
     recent_interventions = Intervention.query.order_by(Intervention.date_intervention.desc()).limit(5).all()
-    
-    # Expiring contracts (within 30 days)
     thirty_days_later = date.today() + timedelta(days=30)
     expiring_contracts = Contract.query.filter(Contract.date_fin_maintenance <= thirty_days_later).all()
-    
-    return render_template('dashboard.html',
-                         total_contracts=total_contracts,
-                         active_contracts=active_contracts,
-                         total_equipment=total_equipment,
-                         pending_interventions=pending_interventions,
-                         recent_interventions=recent_interventions,
-                         expiring_contracts=expiring_contracts)
+    return render_template('dashboard_admin.html',
+        total_contracts=total_contracts,
+        active_contracts=active_contracts,
+        total_equipment=total_equipment,
+        pending_interventions=pending_interventions,
+        recent_interventions=recent_interventions,
+        expiring_contracts=expiring_contracts
+    )
+
+@app.route('/dashboard/contract_manager')
+@login_required
+def dashboard_contract_manager():
+    # ...statistics and queries as in your main dashboard...
+    total_contracts = Contract.query.count()
+    active_contracts = Contract.query.filter_by(statut='actif').count()
+    total_equipment = Equipment.query.count()
+    pending_interventions = Intervention.query.filter_by(statut='en_cours').count()
+    recent_interventions = Intervention.query.order_by(Intervention.date_intervention.desc()).limit(5).all()
+    thirty_days_later = date.today() + timedelta(days=30)
+    expiring_contracts = Contract.query.filter(Contract.date_fin_maintenance <= thirty_days_later).all()
+    return render_template('dashboard_contract_manager.html',
+        total_contracts=total_contracts,
+        active_contracts=active_contracts,
+        total_equipment=total_equipment,
+        pending_interventions=pending_interventions,
+        recent_interventions=recent_interventions,
+        expiring_contracts=expiring_contracts
+    )
+
+@app.route('/dashboard/technical_manager')
+@login_required
+def dashboard_technical_manager():
+    # ...statistics and queries as in your main dashboard...
+    total_contracts = Contract.query.count()
+    active_contracts = Contract.query.filter_by(statut='actif').count()
+    total_equipment = Equipment.query.count()
+    pending_interventions = Intervention.query.filter_by(statut='en_cours').count()
+    recent_interventions = Intervention.query.order_by(Intervention.date_intervention.desc()).limit(5).all()
+    thirty_days_later = date.today() + timedelta(days=30)
+    expiring_contracts = Contract.query.filter(Contract.date_fin_maintenance <= thirty_days_later).all()
+    return render_template('dashboard_technical_manager.html',
+        total_contracts=total_contracts,
+        active_contracts=active_contracts,
+        total_equipment=total_equipment,
+        pending_interventions=pending_interventions,
+        recent_interventions=recent_interventions,
+        expiring_contracts=expiring_contracts
+    )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -158,8 +208,16 @@ def login():
         
         if user and check_password_hash(user.mot_de_passe_hash, password):
             login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+            # Redirect to the correct dashboard after login
+            if user.role == 'Admin':
+                return redirect(url_for('dashboard_admin'))
+            elif user.role == 'Gestionnaire de Contrat':
+                return redirect(url_for('dashboard_contract_manager'))
+            elif user.role == 'Gestionnaire Technique':
+                return redirect(url_for('dashboard_technical_manager'))
+            else:
+                flash("Rôle utilisateur inconnu.", "danger")
+                return redirect(url_for('logout'))
         else:
             flash('Invalid username or password', 'error')
     
@@ -310,6 +368,63 @@ def add_contract():
     suppliers = Supplier.query.all()
     equipment = Equipment.query.all()
     return render_template('contracts/form.html', suppliers=suppliers, equipment=equipment)
+
+@app.route('/pv/add', methods=['GET', 'POST'])
+@login_required
+def add_pv():
+    if current_user.role != 'Gestionnaire Technique' and current_user.role != 'Admin':
+        flash("Accès refusé.", "danger")
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        # Minimal logic for demonstration
+        # You should implement actual PV creation logic here
+        flash('PV ajouté avec succès !', 'success')
+        return redirect(url_for('dashboard_technical_manager'))
+    return render_template('pv/form.html')
+
+@app.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def admin_manage_users():
+    if current_user.role != 'Admin':
+        flash("Accès refusé.", "danger")
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form.get('role')
+        print("DEBUG: username:", username)
+        print("DEBUG: email:", email)
+        print("DEBUG: password:", password)
+        print("DEBUG: role:", role)
+        if not role:
+            flash("Le rôle est obligatoire.", "danger")
+            return redirect(url_for('admin_manage_users'))
+        if User.query.filter_by(nom_utilisateur=username).first():
+            flash("Nom d'utilisateur déjà utilisé.", "danger")
+        else:
+            user = User(
+                nom_utilisateur=username,
+                email=email,
+                role=role,
+                mot_de_passe_hash=generate_password_hash(password)
+            )
+            db.session.add(user)
+            db.session.commit()
+            # Fetch back and print for debug
+            created_user = User.query.filter_by(nom_utilisateur=username).first()
+            print("DEBUG: created user role in DB:", created_user.role)
+            flash("Utilisateur créé avec succès.", "success")
+        return redirect(url_for('admin_manage_users'))
+    users = User.query.all()
+    return render_template('admin_manage_users.html', users=users)
+
+@app.route('/interventions')
+@login_required
+def view_interventions():
+    # You can fetch and pass interventions as needed
+    interventions = Intervention.query.all()
+    return render_template('interventions/list.html', interventions=interventions)
 
 # Initialize database and create admin user
 def init_db():
